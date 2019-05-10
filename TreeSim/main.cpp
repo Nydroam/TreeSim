@@ -9,12 +9,17 @@
 #define PI 3.14159265
 Branch* trunk;
 //Globals
-int branch_num = 0;
 
-int min_len = 5;
-int max_len = 7;
-int min_br = 1;
-int max_br = 3;
+// womping - min_len = 4, max_len = 5, min_br = 2, max_br = 4, trunk_br = 4, scaleh_min = 98, scaleh_max = 98, scaleb_min = 60, scaleb_max = 60
+// baseradius = 40, baseheight = 100, womping = true, main_trunk = false
+
+// weeping  - len = 4,6; br = 2,4; trunk_br = 6, scaleh = 90, scaleb = 65, womping = false, baseradius = 20, maintrunk = false
+
+
+int min_len = 2;
+int max_len = 6;
+int min_br = 3;
+int max_br = 5;
 int trunk_br = 6;
 int scaleh_min = 90;
 int scaleh_max = 90;
@@ -22,7 +27,9 @@ int scaleb_min = 65;
 int scaleb_max = 65;
 int oscframes = 200;
 
-bool main_trunk = false;
+//types of trees
+bool main_trunk = true;
+bool womping = false;
 int base_radius = 20;
 int base_height = 100;
 vector<float> wind_vec{ 0,0,0,0 };
@@ -144,7 +151,7 @@ Branch* make_tree2() {
 			}
 		}
 		else if (node == "[T]") {
-			if (currlen < max_len || currp ) {
+			if (currlen < min_len || currp ) {
 				queue.push_front("[T]");
 				queue.push_front("[B]");
 				//cout << "[T] -> [BT]" << endl;
@@ -162,6 +169,7 @@ Branch* make_tree2() {
 				currlen++;
 				float r = rand() % 100;
 				float r2 = 100.0 / (max_len - currlen + 1);
+				
 				currp = currlen < max_len &&r > r2;
 				currbrn=1;
 				 r = rand() % 100;
@@ -260,10 +268,10 @@ void build_tree(Branch* trunk, float x, float y, float z, float r, float h, floa
 
 					Branch* curr = trunk->childVec.at(i);
 					if (trunk->childVec.size() == 2) {
-						build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, rand() % 360, rand() % 40 + 20, false);
+						build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, rand() % 360, rand() % 30 + 20, false);
 					}
 					else
-						build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 360 / sections * i + (rand() % 30 - 15), rand() % 40 + 20, false);
+						build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 360 / sections * i + (rand() % 30 - 15), rand() % 30 + 20, false);
 
 				}
 			}
@@ -277,19 +285,36 @@ void build_tree(Branch* trunk, float x, float y, float z, float r, float h, floa
 					Branch* curr = trunk->childVec.at(i);
 					if (trunk->childVec.size() == 1) {
 						if (isTrunk) {
+							trunk->isTrunk = true;
 							build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, ry,rand()%10-5, true);
 						}
 						else {
-							build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 0, rand()%10 + 40, false);
+							if(womping){
+								build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 0, rand() % 10 - 30, false);
+							}
+							else {
+								build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 0, rand() % 10 + 40, false);
+							}
 						}
 						
 					}
 					else {
 						if (isTrunk) {
-							build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 360.0 / trunk_br * i, rand() %10 + 40, false);
+							trunk->isTrunk = true;
+							if (womping) {
+								build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 360.0 / trunk_br * i, rand() % 10 - 5 + 20, false);
+							}
+							else {
+								build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 360.0 / trunk_br * i + (rand() % 30 - 15), rand() % 10 + 40, false);
+							}
 						}
 						else {
-							build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 50 / sections * i - 25 , rand() % 10 + 40, false);
+							if (womping) {
+								build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, -180 / sections * i -90 , rand() % 10 - 40, false);
+							}
+							else {
+								build_tree(curr, x, y + h, z, r*scaleb, h*scaleh, rx, 50 / sections * i - 25, rand() % 10 + 40, false);
+							}
 						}
 					}
 				}
@@ -403,9 +428,11 @@ void draw_tree(Branch* trunk) {
 	//print_vector(z_com);
 	//print_matrix(m);
 	glPushMatrix();
+	
 	glRotatef(trunk->rotX, 1.0, 0, 0);
 	glRotatef(trunk->rotY, 0, 1.0, 0);
 	glRotatef(trunk->rotZ, 0.0, 0, 1.0);
+	
 	glGetFloatv(GL_MODELVIEW_MATRIX, m);
 	glLoadIdentity();
 	glRotatef(-1*rot, 0, 1, 0);
@@ -460,11 +487,11 @@ void draw_tree(Branch* trunk) {
 		Tx = 20;
 	if (Tx < -20 || Sx <= -1)
 		Tx = -20;
-
+	
 	glRotatef(trunk->rotX, 1.0, 0, 0);
 	glRotatef(trunk->rotY, 0, 1.0, 0);
 	glRotatef(trunk->rotZ, 0.0, 0, 1.0);
-
+	
 	//miracle bugfix
 	glGetFloatv(GL_MODELVIEW_MATRIX, m);
 	glPushMatrix();
@@ -555,7 +582,7 @@ void display(void) {
 
 	//draw wind vector
 	glPushMatrix();
-	glTranslatef(0, 250, 0);
+	glTranslatef(0, 275, 0);
 	float mag = sqrt(wind_vec.at(0)*wind_vec.at(0) + wind_vec.at(2)*wind_vec.at(2))/sqrt(max_wind*max_wind*2)*300.0;
 	float deg = atan2(-1 * wind_vec.at(2), wind_vec.at(0)) * 180.0 / PI;
 	float m[16];
@@ -563,7 +590,7 @@ void display(void) {
 	glRotatef(90 + deg, 0, 1, 0);
 	
 	glColor4f(0, 0, 1, 1);
-	gluCylinder(qobj, 10, 0, mag, 10, 3);
+	gluCylinder(qobj, 10, 0, mag, 5, 3);
 	glPopMatrix();
 
 	//glTranslatef(0, -200, 0);
@@ -580,7 +607,6 @@ void keyboard(unsigned char key, int x, int y) {
 		rotamount = -1 * rotamount;
 	}
 	if (key == 's') {
-		cout << "HI" << endl;
 		flat = !flat;
 		if (flat) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
