@@ -1,8 +1,8 @@
 # TreeSim
 
-# Raymond Wu
-# 111133532
-# CSE 328
+## Raymond Wu
+## 111133532
+## CSE 328
 
 # Specs
 Made with Visual Studio 2017 and GLUT
