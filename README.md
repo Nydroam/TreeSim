@@ -4,6 +4,9 @@ Raymond Wu
 111133532  
 CSE 328
 
+## Description
+Simulation of a tree swaying in the wind using OpenGL
+
 ## Specs
 Made with Visual Studio 2017 and GLUT
 
